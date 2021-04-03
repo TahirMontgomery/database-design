@@ -85,7 +85,7 @@
         </div>
       </mdb-col>
       <mdb-col class="right">
-        <h2 class="font-weight-bold font-italic">Financily</h2>
+        <h2 class="font-weight-bold font-italic">Database Design</h2>
         <img class="img-fluid img" src="../assets/wallet1.svg" alt="Wallet" />
       </mdb-col>
     </mdb-row>

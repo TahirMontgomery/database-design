@@ -2,7 +2,7 @@
   <mdb-container fluid>
     <mdb-row class="full-height">
       <mdb-col class="login__left">
-        <h2 class="ml-4 font-weight-bold font-italic">Financily</h2>
+        <h2 class="ml-4 font-weight-bold font-italic">Database Design</h2>
         <img class="img-fluid img" src="../assets/wallet1.svg" alt="Wallet" />
       </mdb-col>
       <mdb-col class="login__right">
