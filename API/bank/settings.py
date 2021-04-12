@@ -26,7 +26,7 @@ SECRET_KEY = 'jj6p3zvm3wqhw5ykilxghxsvykh7_z+8h89m6$ls53r9goz$@)'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['bank-usf.herokuapp.com']
+ALLOWED_HOSTS = ['bank-usf.herokuapp.com', 'localhost']
 
 
 # Application definition
@@ -82,7 +82,8 @@ WSGI_APPLICATION = 'bank.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'bankDB.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
