@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from .models import User
 from .serializers import UserSerializer
 
-# Lead viewset
 # class UserViewset(viewsets.ModelViewSet):
 #     queryset = User.objects.all()
 #     permission_classes = [
@@ -19,15 +18,29 @@ from .serializers import UserSerializer
 @api_view(['GET'])
 def getUser(request):
     if request.method == 'GET':
-        # serializer = UserSerializer(data=request.data)
         queryset = User.objects.all()
-        users = UserSerializer(data=queryset)
-        if users.is_valid():
-            return Response(users.data)
-        else:
-            return Response(status.HTTP_400_BAD_REQUEST)
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-# @api_view(['POST'])
-# def registerUser(request):
-#     if request.method == 'POST':
-#         pass
+@api_view(['POST'])
+def registerUser(request):
+    if request.method == 'POST':
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# id = request.data['id']
+# uid = request.data['uid']
+# first_name = request.data['first_name']
+# last_name = request.data['last_name']
+# email = request.data['email']
+# role = request.data['role']
+# password = request.data['password']
+# user = User(id, uid, first_name, last_name, email, role, password)
+# user.save()
