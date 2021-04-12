@@ -71,8 +71,6 @@
 </template>
 
 <script>
-import validator from "email-validator";
-import pvalidator from "password-validator";
 export default {
   name: "Login",
   data() {
@@ -81,7 +79,6 @@ export default {
         password: "",
         email: "",
       },
-      show: false,
     };
   },
   methods: {
@@ -93,35 +90,12 @@ export default {
         alert("Missing required fields");
         return;
       }
-
-      if (!validator.validate(this.user.email)) {
-        alert("Invalid email address");
-        return;
-      }
-
-      var passwordValidator = new pvalidator()
-        .is()
-        .min(8)
-        .is()
-        .max(100)
-        .has()
-        .uppercase() // Must have uppercase letters
-        .has()
-        .lowercase() // Must have lowercase letters
-        .has()
-        .digits(2)
-        .has()
-        .symbols() // Must have at least 2 digits
-        .has()
-        .not()
-        .spaces();
-
-      if (!passwordValidator.validate(this.user.password)) {
-        alert(
-          "Password must be a minimum of 8 characters with uppercase letters, lower case letter, digits and at least one special symbol"
-        );
-        return;
-      }
+      this.$store.commit("login", {
+        uid: 1,
+        isLoggedIn: true,
+        firstName: "Tahir",
+        role: this.user.email == "admin" ? "admin" : "user",
+      });
     },
   },
 };

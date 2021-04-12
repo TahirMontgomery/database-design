@@ -107,6 +107,7 @@
 <script>
 import validator from "email-validator";
 import pvalidator from "password-validator";
+import axios from "axios";
 export default {
   name: "Register",
   data() {
@@ -165,6 +166,19 @@ export default {
         );
         return;
       }
+
+      await axios.post("", {
+        first_name: this.user.firstName,
+        last_name: this.user.lastName,
+        email: this.user.email,
+        password: this.user.password,
+      });
+
+      this.$store.commit("login", {
+        uid: 1,
+        isLoggedIn: true,
+        firstName: this.user.firstName,
+      });
     },
   },
 };

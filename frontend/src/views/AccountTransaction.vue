@@ -1,39 +1,15 @@
 <template>
-  <div class="home">
-    <mdb-container fluid>
-      <mdb-row class="mt-4">
-        <mdb-col>
-          <BalanceCard
-            :cardTitle="'Total Balance'"
-            :cardSubtitle="'$100,000'"
-            color="lightRed"
-            cardIcon="dollar-sign"
-          />
-        </mdb-col>
-        <mdb-col>
-          <BalanceCard
-            color="blue"
-            :cardTitle="'# of Transactions'"
-            :cardSubtitle="'88'"
-            cardIcon="exchange-alt"
-          />
-        </mdb-col>
-        <mdb-col>
-          <BalanceCard
-            color="maroon"
-            :cardTitle="'Pending Disputes'"
-            :cardSubtitle="'0'"
-            cardIcon="ban"
-          />
-        </mdb-col>
-      </mdb-row>
+  <div>
+    <mdb-container class="mt-5" fluid>
+      <h1>{{ accountName }}</h1>
+
       <mdb-row class="mt-5">
         <mdb-col cols="6">
-          <h3 class="text-left">Recent Transactions</h3>
+          <h3 class="text-left">All Transactions</h3>
           <Table :data="transactionData" />
         </mdb-col>
         <mdb-col cols="6">
-          <h3 class="text-left">Recent Disputes</h3>
+          <h3 class="text-left">All Disputes</h3>
           <Table :data="disputeData" />
         </mdb-col>
       </mdb-row>
@@ -42,20 +18,14 @@
 </template>
 
 <script>
-// @ is an alias to /src
 import moment from "moment";
-import BalanceCard from "@/components/BalanceCard.vue";
 import Table from "@/components/Table.vue";
 export default {
-  name: "Home",
+  name: "AccountTransaction",
   components: {
-    BalanceCard,
     Table,
   },
   methods: {
-    randomName() {
-      return this.faker.finance.accountName();
-    },
     getFakeData(num) {
       return new Array(num).fill(null).map(() => ({
         id: this.faker.datatype.uuid(),
@@ -68,6 +38,7 @@ export default {
   },
   data() {
     return {
+      accountName: "Retirement Savings Account",
       transactionData: {
         cols: [
           {
@@ -83,7 +54,7 @@ export default {
             name: "Date",
           },
         ],
-        rows: this.getFakeData(34),
+        rows: this.getFakeData(3),
       },
       disputeData: {
         cols: [
@@ -110,3 +81,5 @@ export default {
   },
 };
 </script>
+
+<style></style>

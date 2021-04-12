@@ -1,36 +1,120 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> |
-      <router-link to="/login">Login</router-link> |
-      <router-link to="/register">Register</router-link>
-    </div>
-    <router-view />
+    <sidebar-menu
+      v-if="checkRoute"
+      @toggle-collapse="onToggleCollapse"
+      width="200px"
+      :menu="menu"
+    >
+      <div slot="footer" class="text-center mb-3">
+        <mdb-btn
+          @click="$store.commit('logout')"
+          color="danger"
+          v-if="!collapsed"
+          >Logout</mdb-btn
+        >
+      </div></sidebar-menu
+    >
+    <router-view :style="main" />
   </div>
 </template>
 
-<style>
+<script>
+export default {
+  name: "App",
+  components: {},
+  data() {
+    return {
+      collapsed: false,
+    };
+  },
+  computed: {
+    menu() {
+      return [
+        {
+          header: true,
+          title: "Database Design",
+          hiddenOnCollapse: true,
+        },
+        {
+          href: "/",
+          title: "Home",
+          icon: "fa fa-home",
+          hidden: this.$store.state.user.role != "user",
+        },
+        {
+          href: "/accounts",
+          title: "Accounts",
+          icon: "fa fa-user",
+          hidden: this.$store.state.user.role != "user",
+        },
+        {
+          href: "/admin",
+          title: "Admin",
+          icon: "fa fa-user",
+          hidden: this.$store.state.user.role != "admin",
+        },
+      ];
+    },
+    main() {
+      return {
+        marginLeft:
+          this.collapsed && this.checkRoute
+            ? "50px"
+            : !this.checkRoute
+            ? "0px"
+            : !this.collapsed && this.checkRoute
+            ? "200px"
+            : "0",
+        transition: "all .2s ease-in",
+      };
+    },
+    checkRoute() {
+      if (this.$route.path == "/login" || this.$route.path == "/register") {
+        return false;
+      }
+      return true;
+    },
+  },
+  created() {
+    if (!this.$store.state.user.isLoggedIn) {
+      this.$router.push("/login");
+    }
+  },
+  methods: {
+    onToggleCollapse(collapsed) {
+      this.collapsed = collapsed;
+    },
+  },
+  watch: {
+    "$store.state.user.isLoggedIn": function () {
+      console.log("Hey");
+      if (this.$store.state.user.isLoggedIn) {
+        if (this.$store.state.user.role == "admin") {
+          this.$router.push("/admin");
+        } else {
+          this.$router.push("/");
+        }
+      } else {
+        this.$router.push("/login");
+      }
+    },
+  },
+};
+</script>
+<style lang="scss">
 @import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap");
 
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+/* .v-sidebar-menu {
+  background-color: lightgray !important;
+} */
+
+.v-sidebar-menu .vsm--icon {
+  background: $primary-color !important;
 }
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+.v-sidebar-menu .vsm--link.vsm--link_active {
+  -webkit-box-shadow: 3px 0px 0px 0px $primary-color inset !important;
+  box-shadow: 3px 0px 0px 0px $primary-color inset !important;
 }
 </style>

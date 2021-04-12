@@ -5,13 +5,18 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-
+import faker from "faker";
 import * as mdbvue from "mdbvue";
 for (const component in mdbvue) {
   Vue.component(component, mdbvue[component]);
 }
 
+import VueSidebarMenu from "vue-sidebar-menu";
+import "vue-sidebar-menu/dist/vue-sidebar-menu.css";
+Vue.use(VueSidebarMenu);
+
 Vue.config.productionTip = false;
+Vue.prototype.faker = faker;
 
 new Vue({
   router,
