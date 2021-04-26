@@ -14,7 +14,6 @@ def getAccount(request):
             """
             cursor.execute(query, [request.data['account_id']])
             row = cursor.fetchall()
-            print(row)
 
         curUser = {
                 "account_id" : row[0][0],
@@ -41,9 +40,8 @@ def createAccount(request):
                 cursor.execute(query, [request.data['uid'], request.data['account_name'], request.data['account_type'], request.data['balance']])
                 row = cursor.fetchone()
                 
-                cursor.execute("Select * from Account where uid=%s", [request.data['uid']])
+                cursor.execute("SELECT * FROM Account WHERE uid=%s", [request.data['uid']])
                 row = cursor.fetchall()
-                print(row)
 
             newAccount = {
                         "account_id" : row[0][0],
