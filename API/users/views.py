@@ -5,23 +5,37 @@ from .models import User
 from .serializers import UserSerializer
 from django.db import connection, transaction
 
-# class UserViewset(viewsets.ModelViewSet):
-#     queryset = User.objects.all()
-#     permission_classes = [
-#         permissions.AllowAny
-#     ] 
-#     serializer_class = UserSerializer
 
-# class RegisterViewset(viewsets.ModelViewSet, request):
-#     queryset = User.objects.all()
-
+# @api_view(['GET'])
+# def getUser(request):
+#     if request.method == 'GET':
+#         queryset = User.objects.all()
+#         serializer = UserSerializer(queryset, many=True)
+#         return Response(serializer.data)
 
 @api_view(['GET'])
 def getUser(request):
     if request.method == 'GET':
-        queryset = User.objects.all()
-        serializer = UserSerializer(queryset, many=True)
-        return Response(serializer.data)
+        with connection.cursor() as cursor:
+            query = """
+            SELECT * FROM User where uid = %s;
+            """
+            cursor.execute(query, [request.data['uid']])
+            row = cursor.fetchall()
+
+        curUser = {
+                    "uid" : row[0][0],
+                    "first_name" : row[0][1],
+                    "last_name" : row[0][2],
+                    "email" : row[0][3],
+                    "role" :  row[0][4],
+                    "password" : row[0][5]
+        }
+        result = UserSerializer(data=curUser)
+        if result.is_valid():
+            return Response(curUser, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST) 
 
 @api_view(['POST'])
 def registerUser(request):
