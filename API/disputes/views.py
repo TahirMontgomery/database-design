@@ -122,14 +122,32 @@ def reviewDispute(request):
     if request.method == 'POST':
         serializer = DisputeSerializer(data=request.data)
         if serializer.is_valid():
+            status = request.data['status']
+            transactionStatus = ""
+            if status == "Rejected":
+                transactionStatus = "Complete"
+            else:
+                transactionStatus = "Removed"
+
             with connection.cursor() as cursor:
                 query = """
-                Update Transactions Set t.status = "Complete" FROM Disputes as d, Transactions as t WHERE t.tid = %s AND d.tid = %s AND d.status = "Rejected"
+                Update Disputes Set status =%s
                 """
-                cursor.execute(query, [request.data['tid'], request.data['tid']])
-            
+                cursor.execute(query, [status, request.data['tid']])
+
+                query = """
+                Update Transactions Set status =%s FROM Disputes WHERE Disputes.tid =%s AND Disputes.tid = Transactions.tid AND Disputes.status = "Pending"
+                """
+                cursor.execute(query, [transactionStatus, request.data['tid']])
+
                 cursor.execute("SELECT * from Disputes WHERE tid =%s;", [request.data['tid']])
                 row = cursor.fetchall()
+
+                if status == "Approved":
+                    query = """
+                    Update Account Set balance = balance + %s FROM Transactions WHERE Transactions.uid = %s AND Transactions.account_id = %s AND Transactions.uid = Account.uid AND Transactions.account_id = Account.account_id;               
+                    """
+                    cursor.execute(query, [request.data['amount'], request.data['uid'], request.data['account_id']])
 
             newDispute = {
                 "tid" : row[0][0],
