@@ -124,9 +124,9 @@ def reviewDispute(request):
         if serializer.is_valid():
             with connection.cursor() as cursor:
                 query = """
-                Update Transactions Set status = "Complete" FROM Disputes WHERE Disputes.tid = Transactions.tid AND Disputes.status = "Rejected"
+                Update Transactions Set t.status = "Complete" FROM Disputes as d, Transactions as t WHERE t.tid = %s AND d.tid = %s AND d.status = "Rejected"
                 """
-                cursor.execute(query)
+                cursor.execute(query, [request.data['tid'], request.data['tid']])
             
                 cursor.execute("SELECT * from Disputes WHERE tid =%s;", [request.data['tid']])
                 row = cursor.fetchall()
@@ -137,7 +137,7 @@ def reviewDispute(request):
                 "user_reason" : row[0][2],
                 "admin_comments" : row[0][3]
             }
-            
+
             result = DisputeSerializer(data=newDispute)
             if result.is_valid():
                 return Response(newDispute, status=status.HTTP_201_CREATED)
