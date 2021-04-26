@@ -91,3 +91,67 @@ def createTransaction(request):
                 return Response(status=status.HTTP_400_BAD_REQUEST) 
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def createWithdrawal(request):
+    if request.method == 'POST':
+        with connection.cursor() as cursor:
+            query = """
+            Update Account Set balance = balance - %s WHERE uid = %s AND account_id = %s;
+            """
+            cursor.execute(query, [request.data['amount'], request.data['uid'], request.data['account_id']])
+
+            query = """
+            INSERT INTO Transactions(account_id, uid, amount, store_name, status) VALUES(%s, %s, %s, %s, %s);
+            """
+            cursor.execute(query, [request.data['account_id'], request.data['uid'], request.data['amount'], "Withdrawal", request.data['status']])
+            row = cursor.fetchone()
+           
+            cursor.execute("SELECT * from Transactions WHERE account_id =%s AND uid=%s AND amount =%s AND store_name = %s", [request.data['account_id'], request.data['uid'], request.data['amount'], "Withdrawal"])
+            row = cursor.fetchall()
+
+        newTrans = {
+                "tid" : row[0][0],
+                "account_id" : row[0][1],
+                "uid" : row[0][2],
+                "amount" : row[0][3],
+                "store_name" : row[0][4],
+                "status" :  row[0][5]
+        }
+        result = TransactionSerializer(data=newTrans)
+        if result.is_valid():
+            return Response(newTrans, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def createDeposit(request):
+    if request.method == 'POST':
+        with connection.cursor() as cursor:
+            query = """
+            Update Account Set balance = balance + %s WHERE uid = %s AND account_id = %s;
+            """
+            cursor.execute(query, [request.data['amount'], request.data['uid'], request.data['account_id']])
+
+            query = """
+            INSERT INTO Transactions(account_id, uid, amount, store_name, status) VALUES(%s, %s, %s, %s, %s);
+            """
+            cursor.execute(query, [request.data['account_id'], request.data['uid'], request.data['amount'], "Deposit", request.data['status']])
+            row = cursor.fetchone()
+           
+            cursor.execute("SELECT * from Transactions WHERE account_id =%s AND uid=%s AND amount =%s AND store_name = %s", [request.data['account_id'], request.data['uid'], request.data['amount'], "Deposit"])
+            row = cursor.fetchall()
+
+        newTrans = {
+                "tid" : row[0][0],
+                "account_id" : row[0][1],
+                "uid" : row[0][2],
+                "amount" : row[0][3],
+                "store_name" : row[0][4],
+                "status" :  row[0][5]
+        }
+        result = TransactionSerializer(data=newTrans)
+        if result.is_valid():
+            return Response(newTrans, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
