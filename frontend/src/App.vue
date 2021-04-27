@@ -40,19 +40,19 @@ export default {
           href: "/",
           title: "Home",
           icon: "fa fa-home",
-          hidden: this.$store.state.user.role != "user",
+          hidden: this.$store.state.user.role != "User",
         },
         {
           href: "/accounts",
           title: "Accounts",
           icon: "fa fa-user",
-          hidden: this.$store.state.user.role != "user",
+          hidden: this.$store.state.user.role != "User",
         },
         {
           href: "/admin",
           title: "Admin",
           icon: "fa fa-user",
-          hidden: this.$store.state.user.role != "admin",
+          hidden: this.$store.state.user.role != "Admin",
         },
       ];
     },
@@ -90,7 +90,7 @@ export default {
     "$store.state.user.isLoggedIn": function () {
       console.log("Hey");
       if (this.$store.state.user.isLoggedIn) {
-        if (this.$store.state.user.role == "admin") {
+        if (this.$store.state.user.role == "Admin") {
           this.$router.push("/admin");
         } else {
           this.$router.push("/");

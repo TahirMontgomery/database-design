@@ -1,6 +1,9 @@
 <template>
   <div class="home">
     <mdb-container fluid>
+      <mdb-btn color="mdb-color darken-3" @click="open = true"
+        >Add account</mdb-btn
+      >
       <mdb-row class="mt-4">
         <mdb-col>
           <BalanceCard
@@ -38,6 +41,38 @@
         </mdb-col>
       </mdb-row>
     </mdb-container>
+    <mdb-modal :show="open" @close="open = false">
+      <mdb-modal-header>
+        <mdb-modal-title>Add Account</mdb-modal-title>
+      </mdb-modal-header>
+      <mdb-modal-body>
+        <mdb-input
+          label="Account Name"
+          v-model="account.account_name"
+          placeholder="Please enter account name"
+          type="text"
+          outline
+        ></mdb-input>
+        <select
+          class="browser-default custom-select"
+          v-model="account.account_type"
+        >
+          <option value="null">Select Account Type</option>
+          <option value="Checking">Checking</option>
+          <option value="Savings">Saving</option>
+        </select>
+        <mdb-input
+          label="Enter Balance on this account"
+          outline
+          type="number"
+          v-model="account.balance"
+        />
+      </mdb-modal-body>
+      <mdb-modal-footer>
+        <mdb-btn color="success" @click="addAccount">Add</mdb-btn>
+        <mdb-btn color="danger">Cancel</mdb-btn>
+      </mdb-modal-footer>
+    </mdb-modal>
   </div>
 </template>
 
@@ -46,6 +81,7 @@
 import moment from "moment";
 import BalanceCard from "@/components/BalanceCard.vue";
 import Table from "@/components/Table.vue";
+import axios from "axios";
 export default {
   name: "Home",
   components: {
@@ -65,9 +101,47 @@ export default {
         date: moment(this.faker.date.past()).format("MMMM Do YYYY, h:mm:ss a"),
       }));
     },
+    async addAccount() {
+      console.log(this.$store);
+      try {
+        const response = await axios.post(
+          "https://bank-usf.herokuapp.com/accounts/createaccount/",
+          {
+            ...this.account,
+            uid: this.$store.state.user.uid,
+          }
+        );
+        console.log(response);
+        this.alert("Account created successfully");
+        this.open = false;
+      } catch (err) {
+        console.log(err);
+        alert("Error occurred. Could not add account");
+      }
+    },
+    async getTransactions() {
+      const response = await axios.get(
+        "https://bank-usf.herokuapp.com/transactions/getusertransactions/",
+        {
+          body: {
+            uid: this.$store.state.user.uid,
+          },
+        }
+      );
+      console.log(response);
+    },
+  },
+  async created() {
+    this.getTransactions();
   },
   data() {
     return {
+      open: false,
+      account: {
+        account_type: "null",
+        account_name: "",
+        balance: 0,
+      },
       transactionData: {
         cols: [
           {
@@ -83,7 +157,7 @@ export default {
             name: "Date",
           },
         ],
-        rows: this.getFakeData(34),
+        rows: [],
       },
       disputeData: {
         cols: [

@@ -71,6 +71,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "Login",
   data() {
@@ -90,12 +91,29 @@ export default {
         alert("Missing required fields");
         return;
       }
-      this.$store.commit("login", {
-        uid: 1,
-        isLoggedIn: true,
-        firstName: "Tahir",
-        role: this.user.email == "admin" ? "admin" : "user",
-      });
+
+      try {
+        const response = await axios.post(
+          "https://bank-usf.herokuapp.com/users/loginuser/",
+          {
+            ...this.user,
+          }
+        );
+
+        console.log(response);
+
+        this.$store.commit("login", {
+          uid: response.data.uid,
+          isLoggedIn: true,
+          firstName: response.data.first_name,
+          role: response.data.role,
+        });
+      } catch (err) {
+        console.log(err);
+        alert(
+          "Incorrect login credentials. Either email or password is incorrect"
+        );
+      }
     },
   },
 };

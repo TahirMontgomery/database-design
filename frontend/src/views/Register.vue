@@ -34,10 +34,15 @@
                 v-model="user.email"
               />
 
-              <select required id="email" class="browser-default custom-select">
+              <select
+                v-model="user.role"
+                required
+                id="email"
+                class="browser-default custom-select"
+              >
                 <option value="null">Select role</option>
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="User">User</option>
+                <option value="Admin">Admin</option>
               </select>
 
               <!-- Password Input -->
@@ -118,6 +123,7 @@ export default {
         password: "",
         confirm: "",
         email: "",
+        role: "null",
       },
     };
   },
@@ -167,15 +173,20 @@ export default {
         return;
       }
 
-      await axios.post("", {
-        first_name: this.user.firstName,
-        last_name: this.user.lastName,
-        email: this.user.email,
-        password: this.user.password,
-      });
+      const response = await axios.post(
+        "https://bank-usf.herokuapp.com/users/registeruser/",
+        {
+          first_name: this.user.firstName,
+          last_name: this.user.lastName,
+          email: this.user.email,
+          password: this.user.password,
+          role: this.user.role,
+        }
+      );
+      console.log(response);
 
       this.$store.commit("login", {
-        uid: 1,
+        uid: response.data.uid,
         isLoggedIn: true,
         firstName: this.user.firstName,
       });
