@@ -5,9 +5,9 @@ from .models import Dispute
 from .serializers import DisputeSerializer
 from django.db import connection, transaction
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getAllDisputes(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         with connection.cursor() as cursor:
             query = """
             SELECT * FROM Disputes;
@@ -65,9 +65,9 @@ def makeDispute(request):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getUserDisputes(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         with connection.cursor() as cursor:
             query = """
             select d.tid, d.status, d.user_reason, d.admin_comments from Disputes as d, Transactions as t where uid = %s AND d.tid = t.tid;
@@ -91,9 +91,9 @@ def getUserDisputes(request):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST) 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getAccountDisputes(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         with connection.cursor() as cursor:
             query = """
             select d.tid, d.status, d.user_reason, d.admin_comments from Disputes as d, Transactions as t where uid = %s AND account_id =%s AND d.tid = t.tid;

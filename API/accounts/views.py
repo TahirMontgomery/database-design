@@ -5,9 +5,9 @@ from .models import Account
 from .serializers import AccountSerializer
 from django.db import connection, transaction
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getAccount(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         with connection.cursor() as cursor:
             query = """
             SELECT * FROM Account where account_id = %s;
@@ -15,18 +15,46 @@ def getAccount(request):
             cursor.execute(query, [request.data['account_id']])
             row = cursor.fetchall()
 
-        curUser = {
+        curAcc = {
                 "account_id" : row[0][0],
                 "uid" : row[0][1],
                 "account_name" : row[0][2],
                 "account_type" : row[0][3],
                 "balance" :  row[0][4]
         }
-        result = AccountSerializer(data=curUser)
+        result = AccountSerializer(data=curAcc)
         if result.is_valid():
-            return Response(curUser, status=status.HTTP_201_CREATED)
+            return Response(curAcc, status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST) 
+
+@api_view(['POST'])
+def getAllAccounts(request):
+    if request.method == 'POST':
+        with connection.cursor() as cursor:
+            query = """
+            SELECT * FROM Account;
+            """
+            cursor.execute(query)
+            row = cursor.fetchall()
+
+        accounts = []
+        for i in row:
+            curAcc = {
+                    "account_id" : i[0],
+                    "uid" : i[1],
+                    "account_name" : i[2],
+                    "account_type" : i[3],
+                    "balance" :  i[4]
+            }
+            accounts.append(curAcc)
+
+        result = AccountSerializer(data=accounts, many=True)
+        if result.is_valid():
+            return Response(accounts, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST) 
+
 
 @api_view(['POST'])
 def createAccount(request):

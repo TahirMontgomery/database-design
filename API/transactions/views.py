@@ -5,9 +5,9 @@ from .models import Transaction, ReturnTransaction
 from .serializers import TransactionSerializer, ReturnTransactionSerializer
 from django.db import connection, transaction
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getUserTransactions(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         with connection.cursor() as cursor:
             query = """
             SELECT * FROM Transactions WHERE uid = %s;
@@ -33,9 +33,9 @@ def getUserTransactions(request):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST) 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getAccountTransactions(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         with connection.cursor() as cursor:
             query = """
             SELECT * FROM Transactions WHERE account_id =%s AND uid =%s;

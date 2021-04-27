@@ -13,9 +13,9 @@ from django.db import connection, transaction
 #         serializer = UserSerializer(queryset, many=True)
 #         return Response(serializer.data)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getUser(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         with connection.cursor() as cursor:
             query = """
             SELECT * FROM User where uid = %s;
