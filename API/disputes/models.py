@@ -4,7 +4,7 @@ class Dispute(models.Model):
     tid = models.AutoField(primary_key=True)
     status = models.TextField()
     user_reason = models.TextField()
-    admin_comments = models.TextField()
+    admin_comments = models.TextField(null=True)
 
     class Meta:
         managed = False

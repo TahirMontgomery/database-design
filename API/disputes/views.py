@@ -43,12 +43,12 @@ def makeDispute(request):
                 cursor.execute(query, [request.data['tid']])
 
                 query = """
-                INSERT INTO Disputes(tid, status, user_reason, admin_comments) VALUES(%s, %s, %s, %s);
+                INSERT INTO Disputes(tid, status, user_reason) VALUES(%s, %s, %s);
                 """
-                cursor.execute(query, [request.data['tid'], request.data['status'], request.data['user_reason'], request.data['admin_comments']])
+                cursor.execute(query, [request.data['tid'], request.data['status'], request.data['user_reason']])
                 row = cursor.fetchone()
             
-                cursor.execute("SELECT * from Disputes WHERE tid =%s AND status=%s;", [request.data['tid'], request.data['status']])
+                cursor.execute("SELECT * from Disputes WHERE tid =%s;", [request.data['tid']])
                 row = cursor.fetchall()
 
             newDispute = {
@@ -120,46 +120,45 @@ def getAccountDisputes(request):
 @api_view(['POST'])
 def reviewDispute(request):
     if request.method == 'POST':
-        serializer = DisputeSerializer(data=request.data)
-        if serializer.is_valid():
-            status = request.data['status']
-            transactionStatus = ""
-            if status == "Rejected":
-                transactionStatus = "Complete"
-            else:
-                transactionStatus = "Removed"
-
-            with connection.cursor() as cursor:
-                query = """
-                Update Disputes Set status =%s
-                """
-                cursor.execute(query, [status, request.data['tid']])
-
-                query = """
-                Update Transactions Set status =%s FROM Disputes WHERE Disputes.tid =%s AND Disputes.tid = Transactions.tid AND Disputes.status = "Pending"
-                """
-                cursor.execute(query, [transactionStatus, request.data['tid']])
-
-                cursor.execute("SELECT * from Disputes WHERE tid =%s;", [request.data['tid']])
-                row = cursor.fetchall()
-
-                if status == "Approved":
-                    query = """
-                    Update Account Set balance = balance + %s FROM Transactions WHERE Transactions.uid = %s AND Transactions.account_id = %s AND Transactions.uid = Account.uid AND Transactions.account_id = Account.account_id;               
-                    """
-                    cursor.execute(query, [request.data['amount'], request.data['uid'], request.data['account_id']])
-
-            newDispute = {
-                "tid" : row[0][0],
-                "status" : row[0][1],
-                "user_reason" : row[0][2],
-                "admin_comments" : row[0][3]
-            }
-
-            result = DisputeSerializer(data=newDispute)
-            if result.is_valid():
-                return Response(newDispute, status=status.HTTP_201_CREATED)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST) 
+        # Get transaction status based off of dispute status
+        disputeStatus = request.data['status']
+        transactionStatus = ""
+        if disputeStatus == "Rejected":
+            transactionStatus = "Complete"
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            transactionStatus = "Removed"
+
+        with connection.cursor() as cursor:
+            # Update status and admin_comments
+            query = """
+            Update Disputes SET status =%s, admin_comments =%s WHERE tid =%s;
+            """
+            cursor.execute(query, [disputeStatus, request.data['admin_comments'], request.data["tid"]])
+
+            # Update transaction status to Complete or Removed
+            query = """
+            Update Transactions SET status =%s WHERE tid =%s;
+            """
+            cursor.execute(query, [transactionStatus, request.data['tid']])
+
+            #  If transaction is Removed then add balance back to the account
+            if disputeStatus == "Approved":
+                cursor.execute("SELECT * from Transactions WHERE tid =%s;", [request.data['tid']])
+                row = cursor.fetchall()
+                curTransaction = {
+                    "tid" : row[0][0],
+                    "account_id" : row[0][1],
+                    "uid" : row[0][2],
+                    "amount" : row[0][3],
+                    "store_name" : row[0][4],
+                    "status" : row[0][5],
+                }
+                query = """
+                Update Account SET balance = balance + %s WHERE account_id =%s AND uid =%s;               
+                """
+                cursor.execute(query, [curTransaction['amount'], curTransaction['account_id'], curTransaction['uid']])
+
+
+        return Response(status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST) 
