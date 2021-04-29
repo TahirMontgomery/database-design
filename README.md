@@ -19,3 +19,6 @@ password: abc123
 New model:
 $ python manage.py makemigrations
 $ python manage.py migrate
+
+Frontend:
+https://database-design-tahir-0429.web.app/

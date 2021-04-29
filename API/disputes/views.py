@@ -25,11 +25,9 @@ def getAllDisputes(request):
             }
             disputes.append(cur)
 
-        result = DisputeSerializer(data=disputes, many=True)
-        if result.is_valid():
-            return Response(disputes, status=status.HTTP_201_CREATED)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST) 
+        return Response(disputes, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST) 
 
 @api_view(['POST'])
 def makeDispute(request):
@@ -157,7 +155,6 @@ def reviewDispute(request):
                 Update Account SET balance = balance + %s WHERE account_id =%s AND uid =%s;               
                 """
                 cursor.execute(query, [curTransaction['amount'], curTransaction['account_id'], curTransaction['uid']])
-
 
         return Response(status=status.HTTP_201_CREATED)
     else:
