@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
-from .views import getUserTransactions, createTransaction, getAccountTransactions, createWithdrawal, createDeposit
+from .views import getUserTransactions, createTransaction, getAccountTransactions, createWithdrawal, createDeposit, getAllTransactions
 
 urlpatterns = [
     path('getusertransactions/', getUserTransactions),
@@ -8,6 +8,7 @@ urlpatterns = [
     path('createtransaction/', createTransaction),
     path('makewithdrawal/', createWithdrawal),
     path('makedeposit/', createDeposit),
+    path('getalltransactions/', getAllTransactions),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

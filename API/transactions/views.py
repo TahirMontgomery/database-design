@@ -6,6 +6,34 @@ from .serializers import TransactionSerializer, ReturnTransactionSerializer
 from django.db import connection, transaction
 
 @api_view(['POST'])
+def getAllTransactions(request):
+    if request.method == 'POST':
+        with connection.cursor() as cursor:
+            query = """
+            SELECT * FROM Transactions;
+            """
+            cursor.execute(query)
+            row = cursor.fetchall()
+
+        transList = []
+        for i in row:
+            curTrans = {
+                    "tid" : i[0],
+                    "account_id" : i[1],
+                    "uid" : i[2],
+                    "amount" : i[3],
+                    "store_name" : i[4],
+                    "status" :  i[5]
+            }
+            transList.append(curTrans)
+
+        result = TransactionSerializer(data=transList, many=True)
+        if result.is_valid():
+            return Response(transList, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST) 
+
+@api_view(['POST'])
 def getUserTransactions(request):
     if request.method == 'POST':
         with connection.cursor() as cursor:
