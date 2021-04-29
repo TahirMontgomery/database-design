@@ -101,6 +101,11 @@ def createTransaction(request):
                 cursor.execute(query, [request.data['account_id'], request.data['uid'], request.data['amount'], request.data['store_name'], request.data['status']])
                 row = cursor.fetchone()
                 
+                query = """
+                Update Account SET balance = balance - %s WHERE account_id =%s AND uid =%s;               
+                """
+                cursor.execute(query, [request.data['amount'], request.data['account_id'], request.data['uid']])
+               
                 cursor.execute("SELECT * from Transactions WHERE account_id =%s AND uid=%s", [request.data['account_id'], request.data['uid']])
                 row = cursor.fetchall()
 
