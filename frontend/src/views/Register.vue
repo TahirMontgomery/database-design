@@ -174,7 +174,7 @@ export default {
       }
 
       const response = await axios.post(
-        "https://bank-usf.herokuapp.com/users/registeruser/",
+        `${process.env.VUE_APP_URL}/users/registeruser/`,
         {
           first_name: this.user.firstName,
           last_name: this.user.lastName,
@@ -189,6 +189,7 @@ export default {
         uid: response.data.uid,
         isLoggedIn: true,
         firstName: this.user.firstName,
+        role: this.user.role,
       });
     },
   },

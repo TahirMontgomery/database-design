@@ -1,14 +1,11 @@
 <template>
   <div class="home">
     <mdb-container fluid>
-      <mdb-btn color="mdb-color darken-3" @click="open = true"
-        >Add account</mdb-btn
-      >
       <mdb-row class="mt-4">
         <mdb-col>
           <BalanceCard
             :cardTitle="'Total Balance'"
-            :cardSubtitle="'$100,000'"
+            :cardSubtitle="`$${totalBalance}`"
             color="lightRed"
             cardIcon="dollar-sign"
           />
@@ -17,15 +14,15 @@
           <BalanceCard
             color="blue"
             :cardTitle="'# of Transactions'"
-            :cardSubtitle="'88'"
+            :cardSubtitle="totalTransactions"
             cardIcon="exchange-alt"
           />
         </mdb-col>
         <mdb-col>
           <BalanceCard
             color="maroon"
-            :cardTitle="'Pending Disputes'"
-            :cardSubtitle="'0'"
+            :cardTitle="'Total Disputes'"
+            :cardSubtitle="totalDisputes"
             cardIcon="ban"
           />
         </mdb-col>
@@ -33,46 +30,14 @@
       <mdb-row class="mt-5">
         <mdb-col cols="6">
           <h3 class="text-left">Recent Transactions</h3>
-          <Table :data="transactionData" />
+          <Table @refresh="getDisputes" :data="transactionData" />
         </mdb-col>
         <mdb-col cols="6">
           <h3 class="text-left">Recent Disputes</h3>
-          <Table :data="disputeData" />
+          <Table :disabled="true" :data="disputeData" />
         </mdb-col>
       </mdb-row>
     </mdb-container>
-    <mdb-modal :show="open" @close="open = false">
-      <mdb-modal-header>
-        <mdb-modal-title>Add Account</mdb-modal-title>
-      </mdb-modal-header>
-      <mdb-modal-body>
-        <mdb-input
-          label="Account Name"
-          v-model="account.account_name"
-          placeholder="Please enter account name"
-          type="text"
-          outline
-        ></mdb-input>
-        <select
-          class="browser-default custom-select"
-          v-model="account.account_type"
-        >
-          <option value="null">Select Account Type</option>
-          <option value="Checking">Checking</option>
-          <option value="Savings">Saving</option>
-        </select>
-        <mdb-input
-          label="Enter Balance on this account"
-          outline
-          type="number"
-          v-model="account.balance"
-        />
-      </mdb-modal-body>
-      <mdb-modal-footer>
-        <mdb-btn color="success" @click="addAccount">Add</mdb-btn>
-        <mdb-btn color="danger">Cancel</mdb-btn>
-      </mdb-modal-footer>
-    </mdb-modal>
   </div>
 </template>
 
@@ -101,51 +66,74 @@ export default {
         date: moment(this.faker.date.past()).format("MMMM Do YYYY, h:mm:ss a"),
       }));
     },
-    async addAccount() {
-      console.log(this.$store);
-      try {
-        const response = await axios.post(
-          "https://bank-usf.herokuapp.com/accounts/createaccount/",
-          {
-            ...this.account,
-            uid: this.$store.state.user.uid,
-          }
-        );
-        console.log(response);
-        this.alert("Account created successfully");
-        this.open = false;
-      } catch (err) {
-        console.log(err);
-        alert("Error occurred. Could not add account");
-      }
-    },
+
     async getTransactions() {
-      const response = await axios.get(
-        "https://bank-usf.herokuapp.com/transactions/getusertransactions/",
+      const response = await axios.post(
+        `${process.env.VUE_APP_URL}/transactions/getusertransactions/`,
+        { uid: this.$store.state.user.uid }
+      );
+      this.transactionData.rows = response.data.map((row) => ({
+        id: row.tid,
+        store: row.store_name,
+        amount: row.amount,
+        status: row.status,
+      }));
+
+      this.totalTransactions = this.transactionData.rows.length;
+    },
+    async getAccounts() {
+      const response = await axios.post(
+        `${process.env.VUE_APP_URL}/accounts/getallaccounts/`
+      );
+      let balance = 0;
+      response.data.forEach((acc) => {
+        if (acc.uid == this.$store.state.user.uid) {
+          balance += acc.balance;
+        }
+      });
+      this.totalBalance = balance;
+    },
+    async getDisputes() {
+      const response = await axios.post(
+        `${process.env.VUE_APP_URL}/disputes/getuserdisputes/`,
         {
-          body: {
-            uid: this.$store.state.user.uid,
-          },
+          uid: this.$store.state.user.uid,
         }
       );
-      console.log(response);
+      this.disputeData.rows = response.data.map((row) => ({
+        id: row.tid,
+        status: row.status,
+        store: this.getTransactionById(row.tid)?.store,
+        amount: this.getTransactionById(row.tid)?.amount,
+        user_reason: row.user_reason,
+        admin_comments: row.admin_comments,
+      }));
+
+      this.totalDisputes = this.disputeData.rows.length;
+    },
+    getTransactionById(id) {
+      const trans = this.transactionData.rows.findIndex((row) => row.id == id);
+      if (trans >= 0) {
+        return this.transactionData.rows[trans];
+      }
+      return null;
     },
   },
   async created() {
-    this.getTransactions();
+    await this.getTransactions();
+    await this.getAccounts();
+    await this.getDisputes();
   },
   data() {
     return {
-      open: false,
-      account: {
-        account_type: "null",
-        account_name: "",
-        balance: 0,
-      },
+      totalBalance: 0,
+      totalTransactions: 0,
+      totalDisputes: 0,
+
       transactionData: {
         cols: [
           {
-            name: "Account",
+            name: "ID",
           },
           {
             name: "Amount",
@@ -154,13 +142,16 @@ export default {
             name: "Store",
           },
           {
-            name: "Date",
+            name: "Status",
           },
         ],
         rows: [],
       },
       disputeData: {
         cols: [
+          {
+            name: "ID",
+          },
           {
             name: "Store",
           },
@@ -169,6 +160,12 @@ export default {
           },
           {
             name: "Status",
+          },
+          {
+            name: "User_Reason",
+          },
+          {
+            name: "Admin_Comments",
           },
         ],
         rows: [

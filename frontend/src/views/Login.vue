@@ -94,7 +94,7 @@ export default {
 
       try {
         const response = await axios.post(
-          "https://bank-usf.herokuapp.com/users/loginuser/",
+          `${process.env.VUE_APP_URL}/users/loginuser/`,
           {
             ...this.user,
           }
